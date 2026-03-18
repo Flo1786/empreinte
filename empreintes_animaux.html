@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empreintes Animaux</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f0e8; font-family: 'Segoe UI', Arial, sans-serif; }
+  .controls {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    justify-content: center; padding: 14px 10px 6px;
+  }
+  button {
+    padding: 7px 18px; font-size: 14px;
+    border: 2px solid #ccc; border-radius: 20px;
+    background: white; cursor: pointer;
+    transition: all 0.2s; color: #333;
+  }
+  button:hover { background: #ece6dd; }
+  button.active { background: #3d2b1a; color: white; border-color: #3d2b1a; }
+  .title-lbl {
+    text-align: center; font-size: 16px; font-weight: 700;
+    color: #4a3322; padding: 6px 0 8px; letter-spacing: 0.5px;
+  }
+  .scene {
+    position: relative; width: 100%; height: 420px;
+    overflow: hidden; background: #f5f0e8;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls" id="controls">
+  <button onclick="go('chat')"   id="btn-chat">🐱 Chat</button>
+  <button onclick="go('chien')"  id="btn-chien">🐶 Chien</button>
+  <button onclick="go('oiseau')" id="btn-oiseau">🐦 Oiseau</button>
+  <button onclick="go('canard')" id="btn-canard">🦆 Canard</button>
+  <button onclick="go('lapin')"  id="btn-lapin">🐰 Lapin</button>
+  <button onclick="go('ours')"   id="btn-ours">🐻 Ours</button>
+</div>
+<div class="title-lbl" id="titlelbl"></div>
+<div class="scene" id="scene"></div>
+
+<script>
+function drawCat(ctx, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(0, 4, 11, 9, 0, 0, Math.PI*2); ctx.fill();
+  for (let [x,y] of [[-10,-9],[-4,-15],[4,-15],[10,-9]]) {
+    ctx.beginPath(); ctx.ellipse(x,y,4.5,4,0,0,Math.PI*2); ctx.fill();
+  }
+}
+function drawDog(ctx, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(0, 4, 13, 10, 0, 0, Math.PI*2); ctx.fill();
+  const toes = [[-12,-10],[-5,-17],[5,-17],[12,-10]];
+  for (let [x,y] of toes) { ctx.beginPath(); ctx.ellipse(x,y,5,4,0,0,Math.PI*2); ctx.fill(); }
+  ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+  for (let [x,y] of toes) { ctx.beginPath(); ctx.moveTo(x,y-4); ctx.lineTo(x,y-8); ctx.stroke(); }
+}
+function drawBird(ctx, col) {
+  ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  for (let [x,y] of [[-18,-5],[-6,-20],[10,-16]]) {
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(x*0.4,y*0.4,x,y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+(x>0?4:-4),y-5); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,14); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,14); ctx.lineTo(-3,19); ctx.stroke();
+  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0,0,3.5,0,Math.PI*2); ctx.fill();
+}
+function drawDuck(ctx, col) {
+  ctx.fillStyle = col+'55'; ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0,5); ctx.lineTo(-16,-6); ctx.quadraticCurveTo(-12,-18,-6,-14); ctx.quadraticCurveTo(-3,-10,0,-8); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,5); ctx.lineTo(16,-6); ctx.quadraticCurveTo(12,-18,6,-14); ctx.quadraticCurveTo(3,-10,0,-8); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,5); ctx.lineTo(0,-18); ctx.stroke();
+  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0,5,4,0,Math.PI*2); ctx.fill();
+  ctx.lineWidth = 2;
+  for (let [x,y,dx,dy] of [[-16,-6,-4,-5],[0,-18,0,-6],[16,-6,4,-5]]) {
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+dx,y+dy); ctx.stroke();
+  }
+}
+function drawRabbit(ctx, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(-8,2,5,11,-0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8,2,5,11,0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-7,16,4,4.5,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(7,16,4,4.5,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  for (let [x,y] of [[-10,-10],[-8,-12],[-5,-10],[5,-10],[8,-12],[10,-10]]) {
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-4); ctx.stroke();
+  }
+}
+function drawBear(ctx, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.ellipse(0,4,16,13,0,0,Math.PI*2); ctx.fill();
+  const toes = [[-15,-8],[-8,-18],[0,-21],[8,-18],[15,-8]];
+  for (let [x,y] of toes) { ctx.beginPath(); ctx.ellipse(x,y,5,4.5,0,0,Math.PI*2); ctx.fill(); }
+  ctx.strokeStyle = col+'aa'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  for (let [x,y] of toes) { ctx.beginPath(); ctx.moveTo(x,y-5); ctx.lineTo(x*1.1,y-10); ctx.stroke(); }
+}
+
+const ANIMALS = {
+  chat:   { fn: drawCat,    col:'#8B5E3C', label:'Empreintes de chat 🐱',
+    path:[{x:60,y:360},{x:105,y:300},{x:155,y:250},{x:200,y:205},{x:255,y:175},{x:310,y:160},{x:365,y:175},{x:410,y:215},{x:450,y:265},{x:480,y:325}],
+    rot:[6,-6,6,-6,4,-4,6,-6,5,-5] },
+  chien:  { fn: drawDog,    col:'#6B4226', label:'Empreintes de chien 🐶',
+    path:[{x:50,y:370},{x:105,y:310},{x:160,y:255},{x:215,y:210},{x:275,y:178},{x:335,y:162},{x:390,y:178},{x:438,y:218},{x:475,y:272},{x:505,y:340}],
+    rot:[-9,9,-9,9,-6,6,-9,9,-7,7] },
+  oiseau: { fn: drawBird,   col:'#2E7D32', label:"Empreintes d'oiseau 🐦",
+    path:[{x:90,y:370},{x:155,y:320},{x:215,y:275},{x:270,y:240},{x:325,y:218},{x:375,y:210},{x:425,y:225},{x:468,y:260},{x:500,y:310},{x:520,y:360}],
+    rot:[0,0,0,0,0,0,0,0,0,0] },
+  canard: { fn: drawDuck,   col:'#1565C0', label:'Empreintes de canard 🦆',
+    path:[{x:70,y:365},{x:130,y:308},{x:188,y:258},{x:242,y:218},{x:298,y:188},{x:356,y:176},{x:410,y:192},{x:455,y:232},{x:490,y:282},{x:515,y:345}],
+    rot:[-8,8,-8,8,-5,5,-8,8,-6,6] },
+  lapin:  { fn: drawRabbit, col:'#7B3F99', label:'Empreintes de lapin 🐰',
+    path:[{x:65,y:370},{x:115,y:318},{x:160,y:270},{x:210,y:230},{x:265,y:204},{x:320,y:194},{x:375,y:208},{x:420,y:244},{x:458,y:294},{x:490,y:352}],
+    rot:[0,0,0,0,0,0,0,0,0,0] },
+  ours:   { fn: drawBear,   col:'#4E342E', label:"Empreintes d'ours 🐻",
+    path:[{x:55,y:375},{x:120,y:315},{x:178,y:258},{x:235,y:212},{x:295,y:180},{x:358,y:167},{x:415,y:182},{x:462,y:222},{x:498,y:275},{x:525,y:345}],
+    rot:[-7,7,-7,7,-5,5,-7,7,-6,6] }
+};
+
+let timers = [];
+function go(name) {
+  timers.forEach(clearTimeout); timers = [];
+  document.getElementById('scene').innerHTML = '';
+  document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-'+name).classList.add('active');
+  const A = ANIMALS[name];
+  document.getElementById('titlelbl').textContent = A.label;
+  A.path.forEach((pos, i) => {
+    const t = setTimeout(() => {
+      const size = 70;
+      const cv = document.createElement('canvas');
+      cv.width = size; cv.height = size;
+      const ctx = cv.getContext('2d');
+      ctx.translate(size/2, size/2);
+      ctx.rotate((A.rot[i % A.rot.length] || 0) * Math.PI / 180);
+      A.fn(ctx, A.col);
+      cv.style.cssText = `position:absolute;left:${pos.x-size/2}px;top:${pos.y-size/2}px;opacity:0;transition:opacity 0.35s;`;
+      document.getElementById('scene').appendChild(cv);
+      requestAnimationFrame(() => requestAnimationFrame(() => { cv.style.opacity = '0.88'; }));
+    }, i * 230);
+    timers.push(t);
+  });
+}
+
+go('chat');
+</script>
+</body>
+</html>
