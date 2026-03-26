@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Bilan d'Étape — Séances 1 & 2</title>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f0f4f8;
+    color: #2d3748;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #4f8ef7 0%, #6c63ff 60%, #a78bfa 100%);
+    color: white;
+    text-align: center;
+    padding: 48px 24px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-icon { font-size: 2.8rem; margin-bottom: 12px; }
+  .hero h1 {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero p { font-size: 1rem; opacity: 0.9; margin-bottom: 18px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 0.85rem;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    background: white;
+    padding: 16px 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.8rem; color: #718096; margin-bottom: 6px;
+  }
+  .progress-bar-bg {
+    background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #4f8ef7, #6c63ff);
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  /* ── CONTAINER ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border-top: 5px solid #4f8ef7;
+    transition: box-shadow 0.3s;
+  }
+  .section-card:nth-child(2) { border-top-color: #10b981; }
+  .section-card:nth-child(3) { border-top-color: #f59e0b; }
+  .section-card:nth-child(4) { border-top-color: #8b5cf6; }
+  .section-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.11); }
+
+  .section-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .section-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+    color: white; font-weight: 800; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-card:nth-child(2) .section-num { background: linear-gradient(135deg, #10b981, #059669); }
+  .section-card:nth-child(3) .section-num { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .section-card:nth-child(4) .section-num { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+  .section-title { font-size: 1.1rem; font-weight: 700; color: #1a202c; }
+  .section-subtitle { font-size: 0.82rem; color: #718096; margin-top: 1px; }
+
+  /* ── QUESTION LABEL ── */
+  .q-label {
+    font-weight: 600; font-size: 0.92rem; color: #2d3748;
+    margin-bottom: 10px; margin-top: 18px;
+  }
+  .q-label:first-of-type { margin-top: 0; }
+  .q-hint { font-size: 0.78rem; color: #a0aec0; font-style: italic; margin-bottom: 10px; }
+
+  /* ── MOOD BUTTONS ── */
+  .mood-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .mood-btn {
+    flex: 1; min-width: 140px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 10px;
+    background: #f7fafc;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-size: 0.88rem;
+    color: #4a5568;
+  }
+  .mood-btn .mood-emoji { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+  .mood-btn:hover { border-color: #4f8ef7; background: #ebf4ff; }
+  .mood-btn.selected {
+    border-color: #4f8ef7;
+    background: linear-gradient(135deg, #ebf4ff, #e9d8fd);
+    color: #2b6cb0;
+    font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(79,142,247,0.2);
+  }
+
+  /* ── CONFIDENCE SCALE ── */
+  .scale-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .scale-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #f7fafc;
+    font-weight: 700; font-size: 1rem; color: #4a5568;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scale-btn:hover { border-color: #4f8ef7; background: #ebf4ff; }
+  .scale-btn.selected {
+    background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+    border-color: #4f8ef7; color: white;
+    box-shadow: 0 4px 12px rgba(79,142,247,0.4);
+    transform: scale(1.1);
+  }
+  .scale-labels {
+    display: flex; justify-content: space-between;
+    font-size: 0.72rem; color: #a0aec0; margin-top: 4px; padding: 0 4px;
+  }
+
+  /* ── COMPETENCE TABLE ── */
+  .comp-grid { display: flex; flex-direction: column; gap: 10px; }
+  .comp-row {
+    display: grid; grid-template-columns: 1fr auto auto auto;
+    align-items: center; gap: 12px;
+    background: #f7fafc; border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    transition: background 0.2s;
+  }
+  .comp-row:hover { background: #edf2f7; }
+  .comp-text { font-size: 0.88rem; color: #2d3748; line-height: 1.4; }
+  .comp-tag {
+    font-size: 0.7rem; color: #718096;
+    background: #e2e8f0; border-radius: 999px;
+    padding: 2px 8px; white-space: nowrap;
+  }
+  .comp-header-row {
+    display: grid; grid-template-columns: 1fr auto auto auto;
+    gap: 12px; padding: 0 16px;
+    font-size: 0.72rem; font-weight: 700; color: #a0aec0;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .comp-header-row span { text-align: center; min-width: 72px; }
+  .comp-choice-group { display: flex; gap: 6px; min-width: 72px; justify-content: center; }
+  .comp-choice {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid #cbd5e0; background: white;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .comp-choice:hover { border-color: #10b981; background: #f0fdf4; }
+  .comp-choice.selected { background: #10b981; border-color: #10b981; }
+  .comp-choice.selected::after { content: '✓'; color: white; font-size: 0.75rem; font-weight: 700; }
+
+  /* ── STAR RATING ── */
+  .star-row { display: flex; gap: 6px; }
+  .star {
+    font-size: 1.8rem; cursor: pointer;
+    color: #e2e8f0; transition: all 0.15s;
+    line-height: 1;
+  }
+  .star:hover, .star.lit { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+
+  /* ── RADIO PILLS ── */
+  .pill-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill {
+    border: 2px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 8px 20px;
+    background: #f7fafc;
+    cursor: pointer;
+    font-size: 0.88rem; color: #4a5568;
+    transition: all 0.2s;
+  }
+  .pill:hover { border-color: #8b5cf6; background: #f5f3ff; }
+  .pill.selected {
+    border-color: #8b5cf6; background: #ede9fe; color: #5b21b6; font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+  }
+
+  /* ── TEXTAREA ── */
+  textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: 12px 14px; font-size: 0.88rem; color: #2d3748;
+    background: #f7fafc; resize: vertical; min-height: 80px;
+    font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s;
+    margin-top: 6px;
+  }
+  textarea:focus { outline: none; border-color: #4f8ef7; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); background: white; }
+  textarea::placeholder { color: #b0bec5; font-style: italic; }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-wrap { text-align: center; margin-top: 12px; }
+  .btn-submit {
+    background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+    color: white; border: none; border-radius: 999px;
+    padding: 14px 48px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.35);
+    letter-spacing: 0.5px;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,142,247,0.45); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* ── SUCCESS BANNER ── */
+  .success-banner {
+    display: none;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white; border-radius: 16px;
+    padding: 28px 32px; text-align: center;
+    margin-top: 24px;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+  }
+  .success-banner h2 { font-size: 1.4rem; margin-bottom: 8px; }
+  .success-banner p { opacity: 0.9; font-size: 0.95rem; }
+
+  /* ── PRINT ── */
+  .btn-print {
+    background: white; color: #4f8ef7;
+    border: 2px solid #4f8ef7; border-radius: 999px;
+    padding: 10px 32px; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; margin-top: 12px; margin-left: 12px;
+    transition: all 0.2s;
+  }
+  .btn-print:hover { background: #ebf4ff; }
+
+  @media print {
+    .progress-wrap, .btn-submit, .btn-print, .success-banner { display: none !important; }
+    .hero { background: #4f8ef7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section-card { box-shadow: none; border: 1px solid #e2e8f0; }
+  }
+
+  @media (max-width: 600px) {
+    .comp-row { grid-template-columns: 1fr; }
+    .comp-header-row { display: none; }
+    .comp-choice-group { justify-content: flex-start; }
+    .section-card { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">📋</div>
+  <h1>Mon Bilan d'Étape — Séances 1 &amp; 2</h1>
+  <p>Prends le temps de faire le point sur tes premiers apprentissages</p>
+  <div class="hero-badge">⏱ Durée estimée : 10 à 15 minutes</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Progression du bilan</span>
+    <span id="pct">0 %</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- ══ SECTION 1 ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <div class="section-title">😊 Je m'évalue — Mon ressenti</div>
+        <div class="section-subtitle">Comment tu te sens après ces deux premières séances ?</div>
+      </div>
+    </div>
+
+    <div class="q-label">Comment je me sens en ce moment ?</div>
+    <div class="mood-row" id="mood">
+      <button class="mood-btn" data-group="mood" data-val="confiant" onclick="selectBtn(this,'mood')">
+        <span class="mood-emoji">☀️</span>Confiant(e) et motivé(e)
+      </button>
+      <button class="mood-btn" data-group="mood" data-val="hesitant" onclick="selectBtn(this,'mood')">
+        <span class="mood-emoji">⛅</span>Un peu hésitant(e) mais curieux(se)
+      </button>
+      <button class="mood-btn" data-group="mood" data-val="inquiet" onclick="selectBtn(this,'mood')">
+        <span class="mood-emoji">🌧️</span>Inquiet(ète) ou perdu(e)
+      </button>
+    </div>
+
+    <hr class="divider">
+
+    <div class="q-label">Mon niveau de confiance pour la suite :</div>
+    <div class="scale-row" id="confidence">
+      <button class="scale-btn" data-group="confidence" data-val="1" onclick="selectBtn(this,'confidence')">1</button>
+      <button class="scale-btn" data-group="confidence" data-val="2" onclick="selectBtn(this,'confidence')">2</button>
+      <button class="scale-btn" data-group="confidence" data-val="3" onclick="selectBtn(this,'confidence')">3</button>
+      <button class="scale-btn" data-group="confidence" data-val="4" onclick="selectBtn(this,'confidence')">4</button>
+      <button class="scale-btn" data-group="confidence" data-val="5" onclick="selectBtn(this,'confidence')">5</button>
+    </div>
+    <div class="scale-labels" style="max-width:280px;">
+      <span>Faible</span><span>Élevé</span>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2 ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div>
+        <div class="section-title">🎯 Je me positionne — Mes apprentissages</div>
+        <div class="section-subtitle">Coche ce qui correspond le mieux à ce que tu as acquis</div>
+      </div>
+    </div>
+
+    <div class="comp-header-row">
+      <span></span>
+      <span>Pas encore</span>
+      <span>Un peu</span>
+      <span>Tout à fait</span>
+    </div>
+    <div class="comp-grid">
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-text">Je suis capable d'identifier ce qui m'aide à réussir en formation</div>
+          <span class="comp-tag">Séance 1</span>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c1" data-val="0" onclick="selectComp(this,'c1')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c1" data-val="1" onclick="selectComp(this,'c1')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c1" data-val="2" onclick="selectComp(this,'c1')"></div>
+        </div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-text">J'ai repéré mes propres freins et leviers pour apprendre</div>
+          <span class="comp-tag">Séance 1</span>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c2" data-val="0" onclick="selectComp(this,'c2')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c2" data-val="1" onclick="selectComp(this,'c2')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c2" data-val="2" onclick="selectComp(this,'c2')"></div>
+        </div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-text">Je comprends ce qu'on attend de moi en tant qu'apprenant(e)</div>
+          <span class="comp-tag">Séance 2</span>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c3" data-val="0" onclick="selectComp(this,'c3')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c3" data-val="1" onclick="selectComp(this,'c3')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c3" data-val="2" onclick="selectComp(this,'c3')"></div>
+        </div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-text">Je connais les attitudes qui favorisent mon apprentissage</div>
+          <span class="comp-tag">Séance 2</span>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c4" data-val="0" onclick="selectComp(this,'c4')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c4" data-val="1" onclick="selectComp(this,'c4')"></div>
+        </div>
+        <div class="comp-choice-group">
+          <div class="comp-choice" data-group="c4" data-val="2" onclick="selectComp(this,'c4')"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SECTION 3 ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div>
+        <div class="section-title">🚀 Mes objectifs — Pour la suite</div>
+        <div class="section-subtitle">Ce que je veux travailler ou améliorer</div>
+      </div>
+    </div>
+
+    <div class="q-label">Pour les prochaines séances, je décide de faire attention à :</div>
+    <textarea id="obj1" placeholder="Ex : Je vais essayer de poser mes questions quand je ne comprends pas..." oninput="updateProgress()"></textarea>
+
+    <div class="q-label">Mon objectif principal pour la semaine prochaine :</div>
+    <textarea id="obj2" placeholder="Ex : Je vais relire mes notes ce soir et les partager avec quelqu'un..." oninput="updateProgress()"></textarea>
+  </div>
+
+  <!-- ══ SECTION 4 ══ -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div>
+        <div class="section-title">💬 Mon avis sur les séances — Évaluation</div>
+        <div class="section-subtitle">Ton avis m'aide à améliorer la formation</div>
+      </div>
+    </div>
+
+    <div class="q-label">Mon niveau de satisfaction global pour ces 2 séances :</div>
+    <div class="star-row" id="stars">
+      <span class="star" data-val="1" onclick="setStars(1)">★</span>
+      <span class="star" data-val="2" onclick="setStars(2)">★</span>
+      <span class="star" data-val="3" onclick="setStars(3)">★</span>
+      <span class="star" data-val="4" onclick="setStars(4)">★</span>
+      <span class="star" data-val="5" onclick="setStars(5)">★</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="q-label">Le rythme des séances était :</div>
+    <div class="pill-row" id="rythme">
+      <button class="pill" data-group="rythme" data-val="lent" onclick="selectPill(this,'rythme')">🐢 Trop lent</button>
+      <button class="pill" data-group="rythme" data-val="adapte" onclick="selectPill(this,'rythme')">✅ Adapté</button>
+      <button class="pill" data-group="rythme" data-val="rapide" onclick="selectPill(this,'rythme')">⚡ Trop rapide</button>
+    </div>
+
+    <div class="q-label">Les activités (jeux, vidéos, échanges) m'ont aidé à comprendre :</div>
+    <div class="pill-row" id="activites">
+      <button class="pill" data-group="activites" data-val="non" onclick="selectPill(this,'activites')">😕 Pas du tout</button>
+      <button class="pill" data-group="activites" data-val="unpeu" onclick="selectPill(this,'activites')">🙂 Un peu</button>
+      <button class="pill" data-group="activites" data-val="oui" onclick="selectPill(this,'activites')">😊 Beaucoup</button>
+    </div>
+
+    <hr class="divider">
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div>
+        <div class="q-label">👍 Ce que j'ai le plus apprécié :</div>
+        <textarea id="apprécie" placeholder="Ex : Le jeu de cartes, les échanges en groupe..." oninput="updateProgress()"></textarea>
+      </div>
+      <div>
+        <div class="q-label">🔧 Ce qui pourrait être amélioré :</div>
+        <textarea id="ameliore" placeholder="Ex : J'aurais aimé avoir plus de temps pour..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+
+    <div class="q-label">💌 Une chose que j'aimerais dire au formateur :</div>
+    <textarea id="message" placeholder="Tout ce que tu veux partager..." oninput="updateProgress()"></textarea>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <button class="btn-submit" onclick="submitBilan()">✅ Valider mon bilan</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimer</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-banner" id="successBanner">
+    <h2>🎉 Bravo ! Ton bilan est enregistré.</h2>
+    <p>Tu peux le retrouver dans ton espace personnel. À très bientôt pour la suite de la formation !</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ── STATE ──
+  const state = {
+    mood: null, confidence: null,
+    c1: null, c2: null, c3: null, c4: null,
+    stars: 0, rythme: null, activites: null
+  };
+
+  // ── SINGLE-SELECT BUTTONS (mood, confidence) ──
+  function selectBtn(el, group) {
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    state[group] = el.dataset.val;
+    updateProgress();
+  }
+
+  // ── PILLS ──
+  function selectPill(el, group) {
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    state[group] = el.dataset.val;
+    updateProgress();
+  }
+
+  // ── COMP CHOICES ──
+  function selectComp(el, group) {
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state[group] = el.dataset.val;
+    updateProgress();
+  }
+
+  // ── STARS ──
+  function setStars(n) {
+    state.stars = n;
+    document.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('lit', parseInt(s.dataset.val) <= n);
+    });
+    updateProgress();
+  }
+  document.querySelectorAll('.star').forEach(s => {
+    s.addEventListener('mouseover', () => {
+      const n = parseInt(s.dataset.val);
+      document.querySelectorAll('.star').forEach(x => x.classList.toggle('lit', parseInt(x.dataset.val) <= n));
+    });
+    s.addEventListener('mouseout', () => {
+      document.querySelectorAll('.star').forEach(x => x.classList.toggle('lit', parseInt(x.dataset.val) <= state.stars));
+    });
+  });
+
+  // ── PROGRESS ──
+  function updateProgress() {
+    const checks = [
+      state.mood, state.confidence,
+      state.c1, state.c2, state.c3, state.c4,
+      state.stars > 0 ? 'ok' : null,
+      state.rythme, state.activites,
+      document.getElementById('obj1').value.trim() || null,
+      document.getElementById('obj2').value.trim() || null,
+      document.getElementById('apprécie').value.trim() || null,
+    ];
+    const done = checks.filter(Boolean).length;
+    const total = checks.length;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('pct').textContent = pct + ' %';
+  }
+
+  // ── SUBMIT ──
+  function submitBilan() {
+    document.getElementById('successBanner').style.display = 'block';
+    document.getElementById('successBanner').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('pct').textContent = '100 %';
+  }
+</script>
+</body>
+</html>
